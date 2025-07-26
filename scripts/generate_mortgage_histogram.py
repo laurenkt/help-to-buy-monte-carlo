@@ -10,7 +10,7 @@ import numpy as np
 def load_mortgage_data():
     """Load mortgage rate monthly changes from CSV file"""
     monthly_changes = []
-    with open('uk_mortgage_monthly_changes.csv', 'r') as f:
+    with open('../datasets/uk_mortgage_monthly_changes.csv', 'r') as f:
         reader = csv.reader(f)
         next(reader)  # Skip header
         for row in reader:
@@ -85,7 +85,7 @@ Non-zero: {pct_non_zero:.1f}%"""
     plt.tight_layout()
     
     # Save as high-quality PNG
-    plt.savefig('uk_mortgage_distribution.png', dpi=300, bbox_inches='tight')
+    plt.savefig('../uk_mortgage_distribution.png', dpi=300, bbox_inches='tight')
     print(f"Histogram saved as 'uk_mortgage_distribution.png'")
     print(f"Dataset contains {n_observations} observations spanning 1939-2017")
     print(f"Mean monthly change: {mean_change:.6f} ({mean_change*100:.4f}%)")

@@ -22,7 +22,7 @@ def process_property_data():
     
     property_data = []
     
-    with open('uk_house_prices_property_type.csv', 'r') as f:
+    with open('../datasets/uk_house_prices_property_type.csv', 'r') as f:
         reader = csv.DictReader(f)
         
         for row in reader:
@@ -141,7 +141,7 @@ def save_processed_data(property_data, monthly_changes):
     print("\nSaving processed property data...")
     
     # Save full dataset
-    with open('uk_property_prices_complete.csv', 'w', newline='') as f:
+    with open('../datasets/uk_property_prices_complete.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['date', 'region', 'flat_price'])
         for record in property_data:
@@ -152,7 +152,7 @@ def save_processed_data(property_data, monthly_changes):
             ])
     
     # Save monthly changes for simulation (primary input)
-    with open('uk_property_monthly_changes.csv', 'w', newline='') as f:
+    with open('../datasets/uk_property_monthly_changes.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['monthly_change'])
         for record in monthly_changes:
@@ -167,7 +167,7 @@ def save_processed_data(property_data, monthly_changes):
         regions[region].append(record)
     
     for region, region_data in regions.items():
-        filename = f"uk_property_changes_{region.lower().replace(' ', '_')}.csv"
+        filename = f"../datasets/uk_property_changes_{region.lower().replace(' ', '_')}.csv"
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['date', 'monthly_change', 'flat_price'])

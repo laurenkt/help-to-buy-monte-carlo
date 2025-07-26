@@ -15,7 +15,7 @@ def process_fred_mortgage_data():
     
     mortgage_data = []
     
-    with open('uk_mortgage_rates_fred.csv', 'r') as f:
+    with open('../datasets/uk_mortgage_rates_fred.csv', 'r') as f:
         reader = csv.DictReader(f)
         
         for row in reader:
@@ -188,7 +188,7 @@ def save_processed_data(mortgage_data, monthly_changes):
     print("\nSaving processed mortgage data...")
     
     # Save full dataset
-    with open('uk_mortgage_rates_complete.csv', 'w', newline='') as f:
+    with open('../datasets/uk_mortgage_rates_complete.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['date', 'mortgage_rate', 'source'])
         for record in mortgage_data:
@@ -199,7 +199,7 @@ def save_processed_data(mortgage_data, monthly_changes):
             ])
     
     # Save monthly changes for simulation (primary input)
-    with open('uk_mortgage_monthly_changes.csv', 'w', newline='') as f:
+    with open('../datasets/uk_mortgage_monthly_changes.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['monthly_change'])
         for record in monthly_changes:
@@ -214,7 +214,7 @@ def save_processed_data(mortgage_data, monthly_changes):
         sources[source].append(record)
     
     for source, source_data in sources.items():
-        filename = f"uk_mortgage_changes_{source.lower()}.csv"
+        filename = f"../datasets/uk_mortgage_changes_{source.lower()}.csv"
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(['date', 'monthly_change', 'mortgage_rate'])

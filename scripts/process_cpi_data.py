@@ -14,7 +14,7 @@ def process_historical_rates():
     
     # Read historical annual rates
     hist_data = []
-    with open('uk_historical_cpi_rates.csv', 'r') as f:
+    with open('../datasets/uk_historical_cpi_rates.csv', 'r') as f:
         reader = csv.reader(f)
         next(reader)  # Skip header
         for row in reader:
@@ -43,7 +43,7 @@ def process_recent_index():
     
     # Read recent index data
     recent_data = []
-    with open('cpih_overall_index.csv', 'r') as f:
+    with open('../datasets/cpih_overall_index.csv', 'r') as f:
         reader = csv.reader(f)
         for row in reader:
             index_value = float(row[0])
@@ -175,21 +175,21 @@ def save_processed_data(data, monthly_changes):
     print("\nSaving processed data...")
     
     # Save full dataset
-    with open('uk_cpi_historical_complete.csv', 'w', newline='') as f:
+    with open('../datasets/uk_cpi_historical_complete.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['date', 'annual_rate', 'source'])
         for record in data:
             writer.writerow([record['date'].strftime('%Y-%m-%d'), record['annual_rate'], record['source']])
     
     # Save just the annual rates for reference
-    with open('uk_cpi_annual_rates.csv', 'w', newline='') as f:
+    with open('../datasets/uk_cpi_annual_rates.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['annual_rate'])
         for record in data:
             writer.writerow([record['annual_rate']])
     
     # Save monthly changes for simulation (this is what we'll actually use)
-    with open('uk_cpi_monthly_changes.csv', 'w', newline='') as f:
+    with open('../datasets/uk_cpi_monthly_changes.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['monthly_change'])
         for record in monthly_changes:

@@ -34,10 +34,18 @@ The simulation will:
 - Display interactive matplotlib visualization with year slider
 - Rank repayment strategies by median P&L performance
 
+## Project Structure
+
+The project is organized into clean directories:
+- **`main.py`**: Main simulation engine and visualization
+- **`datasets/`**: All historical UK economic data (CPI, property prices, mortgage rates)
+- **`scripts/`**: Data processing and chart generation utilities
+- **`pyproject.toml`**: Modern Python project configuration with uv
+
 ## Core Architecture
 
 ### Single-File Design
-The entire application is contained in `main.py` as a monolithic financial modeling tool with three main components:
+The main application is contained in `main.py` as a monolithic financial modeling tool with three main components:
 
 ### 1. SimulationConfig Class
 Central configuration and execution controller that:

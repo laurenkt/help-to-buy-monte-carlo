@@ -128,16 +128,37 @@ The histogram above shows the distribution of 905 monthly CPI change observation
 
 To regenerate datasets:
 ```bash
+cd scripts
 uv run python process_cpi_data.py       # CPI inflation data
 uv run python process_property_data.py  # Property price data
 uv run python process_mortgage_data.py  # Mortgage rate data
+cd ..
 ```
 
 To generate data validation charts:
 ```bash
+cd scripts
 uv run python generate_cpi_histogram.py      # CPI distribution histogram
 uv run python generate_mortgage_histogram.py # Mortgage rate distribution histogram  
 uv run python generate_property_histogram.py # Property price distribution histogram
+cd ..
+```
+
+## Project Structure
+
+```
+help-to-buy-monte-carlo/
+├── main.py                    # Main simulation engine
+├── datasets/                  # All historical data files
+│   ├── uk_cpi_*.csv          # CPI data files
+│   ├── uk_property_*.csv     # Property price data files
+│   ├── uk_mortgage_*.csv     # Mortgage rate data files
+│   └── *.png                 # Data distribution charts
+├── scripts/                  # Data processing and analysis scripts
+│   ├── process_*.py          # Data processing scripts
+│   └── generate_*.py         # Chart generation scripts
+├── pyproject.toml            # Project configuration and dependencies
+└── uv.lock                   # Locked dependency versions
 ```
 
 ## Configuration

@@ -29,10 +29,10 @@ def load_historical_cpi_changes():
         return _historical_cpi_changes
     
     # Use complete historical file with dates for filtering
-    cpi_file = 'uk_cpi_historical_complete.csv'
+    cpi_file = 'datasets/uk_cpi_historical_complete.csv'
     if not os.path.exists(cpi_file):
         # Fallback to the changes-only file
-        cpi_file = 'uk_cpi_monthly_changes.csv'
+        cpi_file = 'datasets/uk_cpi_monthly_changes.csv'
         if not os.path.exists(cpi_file):
             if mp.current_process().name == 'MainProcess':
                 print(f"Warning: No CPI data files found, falling back to uniform random CPI changes")
@@ -107,10 +107,10 @@ def load_historical_property_changes():
         return _historical_property_changes
     
     # Use complete historical file with dates for filtering
-    property_file = 'uk_property_prices_complete.csv'
+    property_file = 'datasets/uk_property_prices_complete.csv'
     if not os.path.exists(property_file):
         # Fallback to the changes-only file
-        property_file = 'uk_property_monthly_changes.csv'
+        property_file = 'datasets/uk_property_monthly_changes.csv'
         if not os.path.exists(property_file):
             if mp.current_process().name == 'MainProcess':
                 print(f"Warning: No property data files found, falling back to uniform random property changes")
@@ -187,10 +187,10 @@ def load_historical_mortgage_changes():
         return _historical_mortgage_changes
     
     # Use complete historical file with dates for filtering
-    mortgage_file = 'uk_mortgage_rates_complete.csv'
+    mortgage_file = 'datasets/uk_mortgage_rates_complete.csv'
     if not os.path.exists(mortgage_file):
         # Fallback to the changes-only file
-        mortgage_file = 'uk_mortgage_monthly_changes.csv'
+        mortgage_file = 'datasets/uk_mortgage_monthly_changes.csv'
         if not os.path.exists(mortgage_file):
             if mp.current_process().name == 'MainProcess':
                 print(f"Warning: No mortgage data files found, falling back to uniform random mortgage changes")
