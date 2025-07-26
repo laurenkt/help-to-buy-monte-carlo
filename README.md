@@ -146,6 +146,7 @@ python main.py 100 5
 
 The simulation generates:
 - Parallel processing across available CPU cores
+- Progress bar for large runs (>1,000 scenarios per year)
 - Interactive matplotlib visualization with year slider
 - Ranking of repayment strategies by median P&L performance
 - Total scenarios = `num_scenarios × (max_year + 1)`

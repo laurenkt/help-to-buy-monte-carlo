@@ -7,6 +7,7 @@ import multiprocessing as mp
 import csv
 import os
 import sys
+from tqdm import tqdm
 
 # Global variables to cache historical data
 _historical_cpi_changes = None
@@ -34,11 +35,14 @@ def load_historical_cpi_changes():
                 changes.append(float(row[0]))  # Already in decimal format
         
         _historical_cpi_changes = np.array(changes)
-        print(f"Loaded {len(changes)} historical CPI monthly changes (mean: {np.mean(_historical_cpi_changes)*100:.4f}%, std: {np.std(_historical_cpi_changes)*100:.4f}%)")
+        # Only print loading message once
+        if mp.current_process().name == 'MainProcess':
+            print(f"Loaded {len(changes)} historical CPI monthly changes (mean: {np.mean(_historical_cpi_changes)*100:.4f}%, std: {np.std(_historical_cpi_changes)*100:.4f}%)")
         return _historical_cpi_changes
         
     except Exception as e:
-        print(f"Error loading CPI changes: {e}, falling back to uniform random")
+        if mp.current_process().name == 'MainProcess':
+            print(f"Error loading CPI changes: {e}, falling back to uniform random")
         return None
 
 def sample_historical_cpi_change(random_state):
@@ -61,7 +65,8 @@ def load_historical_property_changes():
     
     property_file = 'uk_property_monthly_changes.csv'
     if not os.path.exists(property_file):
-        print(f"Warning: {property_file} not found, falling back to uniform random property changes")
+        if mp.current_process().name == 'MainProcess':
+            print(f"Warning: {property_file} not found, falling back to uniform random property changes")
         return None
     
     try:
@@ -73,11 +78,14 @@ def load_historical_property_changes():
                 changes.append(float(row[0]))  # Already in decimal format
         
         _historical_property_changes = np.array(changes)
-        print(f"Loaded {len(changes)} historical property monthly changes (mean: {np.mean(_historical_property_changes)*100:.3f}%, std: {np.std(_historical_property_changes)*100:.3f}%)")
+        # Only print loading message once
+        if mp.current_process().name == 'MainProcess':
+            print(f"Loaded {len(changes)} historical property monthly changes (mean: {np.mean(_historical_property_changes)*100:.3f}%, std: {np.std(_historical_property_changes)*100:.3f}%)")
         return _historical_property_changes
         
     except Exception as e:
-        print(f"Error loading property changes: {e}, falling back to uniform random")
+        if mp.current_process().name == 'MainProcess':
+            print(f"Error loading property changes: {e}, falling back to uniform random")
         return None
 
 def sample_historical_property_change(random_state):
@@ -100,7 +108,8 @@ def load_historical_mortgage_changes():
     
     mortgage_file = 'uk_mortgage_monthly_changes.csv'
     if not os.path.exists(mortgage_file):
-        print(f"Warning: {mortgage_file} not found, falling back to uniform random mortgage changes")
+        if mp.current_process().name == 'MainProcess':
+            print(f"Warning: {mortgage_file} not found, falling back to uniform random mortgage changes")
         return None
     
     try:
@@ -112,11 +121,14 @@ def load_historical_mortgage_changes():
                 changes.append(float(row[0]))  # Already in decimal format
         
         _historical_mortgage_changes = np.array(changes)
-        print(f"Loaded {len(changes)} historical mortgage monthly changes (mean: {np.mean(_historical_mortgage_changes)*100:.4f}%, std: {np.std(_historical_mortgage_changes)*100:.4f}%)")
+        # Only print loading message once
+        if mp.current_process().name == 'MainProcess':
+            print(f"Loaded {len(changes)} historical mortgage monthly changes (mean: {np.mean(_historical_mortgage_changes)*100:.4f}%, std: {np.std(_historical_mortgage_changes)*100:.4f}%)")
         return _historical_mortgage_changes
         
     except Exception as e:
-        print(f"Error loading mortgage changes: {e}, falling back to uniform random")
+        if mp.current_process().name == 'MainProcess':
+            print(f"Error loading mortgage changes: {e}, falling back to uniform random")
         return None
 
 def sample_historical_mortgage_change(random_state):
@@ -188,7 +200,16 @@ class SimulationConfig:
         # Set seed for reproducible scenario generation
         np.random.seed(123)
         
+        total_scenarios = num_scenarios * (max_year + 1)
+        show_progress = num_scenarios > 1000
+        
         print(f"Running {num_scenarios} scenarios for each repayment year (0-{max_year}) in parallel...")
+        
+        # Preload historical data to avoid repeated loading in worker processes
+        print("Loading historical data...")
+        load_historical_property_changes()
+        load_historical_cpi_changes() 
+        load_historical_mortgage_changes()
         
         # Prepare arguments for parallel processing
         year_args = [(year, num_scenarios) for year in range(0, max_year + 1)]
@@ -198,14 +219,34 @@ class SimulationConfig:
         print(f"Using {num_cores} CPU cores...")
         
         with Pool(num_cores) as pool:
-            year_results = pool.map(self._run_year_scenarios, year_args)
+            if show_progress:
+                # Use imap_unordered for better progress tracking
+                print("Starting parallel processing with progress tracking...")
+                year_results = []
+                pbar = tqdm(total=len(year_args), desc="Processing years", unit="year", 
+                           bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}] {postfix}')
+                
+                for result in pool.imap_unordered(self._run_year_scenarios, year_args):
+                    year_results.append(result)
+                    year, scenarios = result
+                    completed_scenarios = len(year_results) * num_scenarios
+                    pbar.set_postfix_str(f"Year {year}: {len(scenarios):,} scenarios | Total: {completed_scenarios:,}/{total_scenarios:,}")
+                    pbar.update(1)
+                
+                pbar.close()
+                
+                # Sort results by year since imap_unordered doesn't preserve order
+                year_results.sort(key=lambda x: x[0])
+            else:
+                year_results = pool.map(self._run_year_scenarios, year_args)
         
         # Combine all results
         all_scenarios = []
         year_summaries = []
         
         for year, year_scenarios in year_results:
-            print(f"Processed year {year}: {len(year_scenarios)} scenarios")
+            if not show_progress:  # Only print if no progress bar was shown
+                print(f"Processed year {year}: {len(year_scenarios)} scenarios")
             all_scenarios.extend(year_scenarios)
             
             # Calculate median performance for this year
