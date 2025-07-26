@@ -7,8 +7,9 @@ import multiprocessing as mp
 import csv
 import os
 
-# Global variable to cache historical CPI monthly changes
+# Global variables to cache historical data
 _historical_cpi_changes = None
+_historical_property_changes = None
 
 def load_historical_cpi_changes():
     """Load historical CPI monthly changes from CSV file for realistic sampling"""
@@ -41,6 +42,45 @@ def load_historical_cpi_changes():
 def sample_historical_cpi_change(random_state):
     """Sample a random CPI monthly change from historical distribution"""
     historical_changes = load_historical_cpi_changes()
+    
+    if historical_changes is None:
+        # Fallback to original uniform random method
+        return random_state.uniform(-0.01, 0.01)
+    
+    # Sample from historical distribution
+    return random_state.choice(historical_changes)
+
+def load_historical_property_changes():
+    """Load historical property monthly changes from CSV file for realistic sampling"""
+    global _historical_property_changes
+    
+    if _historical_property_changes is not None:
+        return _historical_property_changes
+    
+    property_file = 'uk_property_monthly_changes.csv'
+    if not os.path.exists(property_file):
+        print(f"Warning: {property_file} not found, falling back to uniform random property changes")
+        return None
+    
+    try:
+        changes = []
+        with open(property_file, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip header
+            for row in reader:
+                changes.append(float(row[0]))  # Already in decimal format
+        
+        _historical_property_changes = np.array(changes)
+        print(f"Loaded {len(changes)} historical property monthly changes (mean: {np.mean(_historical_property_changes)*100:.3f}%, std: {np.std(_historical_property_changes)*100:.3f}%)")
+        return _historical_property_changes
+        
+    except Exception as e:
+        print(f"Error loading property changes: {e}, falling back to uniform random")
+        return None
+
+def sample_historical_property_change(random_state):
+    """Sample a random property monthly change from historical distribution"""
+    historical_changes = load_historical_property_changes()
     
     if historical_changes is None:
         # Fallback to original uniform random method
@@ -165,19 +205,22 @@ def generate_htb_projection(principal_amount, initial_property_value, repayment_
     time_months = np.arange(0, total_months + 1)
     cumulative_interest = np.zeros(len(time_months))
     
-    # Property value simulation: monthly random variation +/-1%
-    np.random.seed(random_seed + 2000)  # Different seed for property values
-    monthly_property_changes = np.random.uniform(-0.01, 0.01, total_months + 1)  # +/-1% monthly
+    # Property value simulation: use historical South East London flat price changes
+    property_random_state = np.random.RandomState(random_seed + 2000)  # Different seed for property values
     property_values = np.zeros(len(time_months))
     
     # Start with initial property value
     current_property_value = initial_property_value
+    property_values[0] = current_property_value
     
-    # Track property value month by month
-    for month in range(len(time_months)):
-        if month > 0:
-            current_property_value = max(initial_property_value * 0.3, 
-                                       current_property_value * (1 + monthly_property_changes[month]))  # Min 30% of initial
+    # Apply historical property changes month by month
+    for month in range(1, len(time_months)):
+        # Sample a historical monthly change for South East London flats
+        monthly_change = sample_historical_property_change(property_random_state)
+        
+        # Apply the change to current property value
+        current_property_value = max(initial_property_value * 0.3,  # 30% floor protection
+                                   current_property_value * (1 + monthly_change))
         property_values[month] = current_property_value
     
     # CPI simulation: use historical monthly changes to evolve CPI over time
