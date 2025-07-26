@@ -47,16 +47,24 @@ The aim is to understand risk exposure under various economic conditions and ass
 
 ## Setup
 
+This project uses [uv](https://docs.astral.sh/uv/) for modern Python project management.
+
 First-time setup:
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies and create virtual environment
+uv sync
 ```
 
 For subsequent runs:
 ```bash
-source activate.sh
+# Run directly with uv (recommended)
+uv run python main.py
+
+# Or activate virtual environment manually
+source .venv/bin/activate
 python main.py
 ```
 
@@ -120,16 +128,16 @@ The histogram above shows the distribution of 905 monthly CPI change observation
 
 To regenerate datasets:
 ```bash
-python process_cpi_data.py       # CPI inflation data
-python process_property_data.py  # Property price data
-python process_mortgage_data.py  # Mortgage rate data
+uv run python process_cpi_data.py       # CPI inflation data
+uv run python process_property_data.py  # Property price data
+uv run python process_mortgage_data.py  # Mortgage rate data
 ```
 
 To generate data validation charts:
 ```bash
-python generate_cpi_histogram.py      # CPI distribution histogram
-python generate_mortgage_histogram.py # Mortgage rate distribution histogram  
-python generate_property_histogram.py # Property price distribution histogram
+uv run python generate_cpi_histogram.py      # CPI distribution histogram
+uv run python generate_mortgage_histogram.py # Mortgage rate distribution histogram  
+uv run python generate_property_histogram.py # Property price distribution histogram
 ```
 
 ## Configuration
@@ -143,23 +151,20 @@ Edit main.py to configure:
 ## Running the Simulation
 
 ```bash
-# Activate virtual environment
-source activate.sh
-
 # Run with default settings (1,000 scenarios per year, 0-25 years)
-python main.py
+uv run python main.py
 
 # Specify number of scenarios per year
-python main.py 10000
+uv run python main.py 10000
 
 # Specify scenarios per year and max repayment year
-python main.py 5000 20
+uv run python main.py 5000 20
 
 # Specify scenarios, max year, and historical lookback period
-python main.py 10000 25 10  # Use only last 10 years of economic data
+uv run python main.py 10000 25 10  # Use only last 10 years of economic data
 
 # Quick test run (100 scenarios, up to year 5)
-python main.py 100 5
+uv run python main.py 100 5
 ```
 
 **Command Line Arguments:**
@@ -169,9 +174,9 @@ python main.py 100 5
 
 **Historical Data Lookback:**
 The lookback feature allows you to limit the simulation to recent economic conditions by specifying how many years back to sample from. For example:
-- `python main.py 1000 25 10` - Uses only data from 2015-2025 (last 10 years)
-- `python main.py 1000 25 30` - Uses only data from 1995-2025 (last 30 years)
-- `python main.py 1000 25` - Uses all available historical data (1939-2025 for mortgage rates, 1950-2025 for CPI, 1995-2025 for property prices)
+- `uv run python main.py 1000 25 10` - Uses only data from 2015-2025 (last 10 years)
+- `uv run python main.py 1000 25 30` - Uses only data from 1995-2025 (last 30 years)
+- `uv run python main.py 1000 25` - Uses all available historical data (1939-2025 for mortgage rates, 1950-2025 for CPI, 1995-2025 for property prices)
 
 The simulation generates:
 - Parallel processing across available CPU cores

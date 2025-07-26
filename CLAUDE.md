@@ -4,21 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Environment Setup
 
-```bash
-# First-time setup
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+This project uses [uv](https://docs.astral.sh/uv/) for modern Python project management:
 
-# Subsequent runs
-source activate.sh
+```bash
+# First-time setup (installs dependencies and creates .venv automatically)
+uv sync
+
+# Run the simulation
+uv run python main.py
+
+# Or activate the virtual environment manually
+source .venv/bin/activate
+python main.py
 ```
 
 ## Running the Simulation
 
 ```bash
 # Run the full Monte Carlo simulation (1000 scenarios per year, 0-25 years)
-python main.py
+uv run python main.py
+
+# Or with custom parameters
+uv run python main.py 10000 25 10  # 10k scenarios, 25 years, last 10 years of data
 ```
 
 The simulation will:
@@ -72,3 +79,10 @@ Each scenario generates complete financial time-series â†’ Statistical ranking â
 - Memory efficiency: Scenarios store only final P&L for ranking; full results generated on-demand for visualization
 - Performance optimization: Parallel execution essential due to computational intensity (26,000 scenarios)
 - Visualization responsiveness: Real-time chart updates when sliding between repayment years
+
+## Writing Guidelines
+
+- Commit messages and task summaries should:
+  - Use clear, descriptive language
+  - Include relevant emojis to add visual context
+  - Highlight key technical achievements or challenges
