@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import multiprocessing as mp
 import csv
 import os
+import sys
 
 # Global variables to cache historical data
 _historical_cpi_changes = None
@@ -693,6 +694,34 @@ def plot_interactive_scenarios(scenarios, best_scenario, year_summaries):
     plt.show()
 
 if __name__ == "__main__":
+    # Parse command line arguments
+    num_scenarios = 1000  # Default value
+    max_year = 25        # Default value
+    
+    if len(sys.argv) > 1:
+        try:
+            num_scenarios = int(sys.argv[1])
+            if num_scenarios <= 0:
+                print("Error: Number of scenarios must be positive")
+                sys.exit(1)
+        except ValueError:
+            print("Error: First argument must be a valid integer (number of scenarios)")
+            print("Usage: python main.py [num_scenarios] [max_year]")
+            print("Example: python main.py 10000")
+            print("Example: python main.py 5000 20")
+            sys.exit(1)
+    
+    if len(sys.argv) > 2:
+        try:
+            max_year = int(sys.argv[2])
+            if max_year < 0 or max_year > 30:
+                print("Error: Max year must be between 0 and 30")
+                sys.exit(1)
+        except ValueError:
+            print("Error: Second argument must be a valid integer (max repayment year)")
+            print("Usage: python main.py [num_scenarios] [max_year]")
+            sys.exit(1)
+    
     # Configure simulation parameters
     config = SimulationConfig(
         mortgage_rate=0.02,         # 2% annual
@@ -707,9 +736,12 @@ if __name__ == "__main__":
     print(f"Mortgage: £{config.mortgage_amount:,} ({config.mortgage_amount/config.initial_property_value*100:.1f}%)")
     print(f"Initial equity: £{config.initial_equity:,} ({config.initial_equity/config.initial_property_value*100:.1f}%)")
     print(f"\nRunning Monte Carlo analysis...")
+    print(f"Scenarios per year: {num_scenarios:,}")
+    print(f"Repayment years: 0-{max_year}")
+    print(f"Total scenarios: {num_scenarios * (max_year + 1):,}")
     
     # Run Monte Carlo scenarios 
-    scenarios, year_summaries = config.run_monte_carlo_scenarios(num_scenarios=1000, max_year=25)
+    scenarios, year_summaries = config.run_monte_carlo_scenarios(num_scenarios=num_scenarios, max_year=max_year)
     
     if scenarios:
         # Find the best scenario

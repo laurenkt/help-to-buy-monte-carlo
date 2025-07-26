@@ -127,14 +127,28 @@ Edit main.py to configure:
 # Activate virtual environment
 source activate.sh
 
-# Run full Monte Carlo analysis (26,000 scenarios)
+# Run with default settings (1,000 scenarios per year, 0-25 years)
 python main.py
+
+# Specify number of scenarios per year
+python main.py 10000
+
+# Specify scenarios per year and max repayment year
+python main.py 5000 20
+
+# Quick test run (100 scenarios, up to year 5)
+python main.py 100 5
 ```
+
+**Command Line Arguments:**
+- `num_scenarios` (optional): Number of scenarios per repayment year (default: 1,000)
+- `max_year` (optional): Maximum repayment year to analyze (default: 25, max: 30)
 
 The simulation generates:
 - Parallel processing across available CPU cores
 - Interactive matplotlib visualization with year slider
 - Ranking of repayment strategies by median P&L performance
+- Total scenarios = `num_scenarios × (max_year + 1)`
 
 ## Output Files
 
