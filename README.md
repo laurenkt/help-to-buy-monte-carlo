@@ -94,11 +94,19 @@ This simulation uses **historical UK inflation data** to provide realistic econo
 - **Standard deviation**: 1.226%  
 - **Range**: -6.6% to +6.3% monthly
 
+![UK Property Distribution](uk_property_distribution.png)
+
+The property price histogram shows 1,436 monthly observations from 1995-2024 for South East London flats. The distribution shows a positive bias (+0.51% monthly mean) with 65.9% positive months vs 30.6% negative, reflecting the long-term upward trend in UK property prices. The distribution has moderate right skew with occasional extreme movements during market crashes (2008) and booms.
+
 **Mortgage Rate Changes:**
 - Extracted from historical UK mortgage rates with 5-year lock periods
 - **Mean monthly change**: -0.0034%
 - **Standard deviation**: 0.2853%
 - **Range**: -1.95% to +3.25% monthly
+
+![UK Mortgage Distribution](uk_mortgage_distribution.png)
+
+The mortgage rate histogram displays 928 monthly observations from 1939-2017. The distribution shows that rates remained unchanged in 61.7% of months (reflecting 5-year fixed periods), with a slight negative bias (-0.0034% monthly) over the long term. When rates do change, they exhibit higher volatility than CPI but lower than property prices, with extreme movements during periods of economic stress (1970s-1980s inflation, financial crises).
 
 **CPI Changes:**
 - Converted annual CPI rates to monthly change deltas for realistic inflation evolution
@@ -106,11 +114,22 @@ This simulation uses **historical UK inflation data** to provide realistic econo
 - **Standard deviation**: 0.0460%
 - **Range**: -0.27% to +0.29% monthly
 
+![UK CPI Distribution](uk_cpi_distribution.png)
+
+The histogram above shows the distribution of 905 monthly CPI change observations from 1950-2025. The data exhibits a near-normal distribution centered around zero, with most changes falling within ±0.1% monthly. This provides realistic inflation volatility for the Monte Carlo simulation.
+
 To regenerate datasets:
 ```bash
 python process_cpi_data.py       # CPI inflation data
 python process_property_data.py  # Property price data
 python process_mortgage_data.py  # Mortgage rate data
+```
+
+To generate data validation charts:
+```bash
+python generate_cpi_histogram.py      # CPI distribution histogram
+python generate_mortgage_histogram.py # Mortgage rate distribution histogram  
+python generate_property_histogram.py # Property price distribution histogram
 ```
 
 ## Configuration
