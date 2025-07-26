@@ -10,9 +10,9 @@ The aim is to understand risk exposure under various economic conditions and ass
 
 ## Features
 - **Stochastic modeling** using Monte Carlo:
-  - House prices (Geometric Brownian Motion or mean-reverting processes)
-  - Inflation (random walk with drift)
-  - Interest rates (simple stochastic or Vasicek/CIR process)
+  - House prices (monthly ±1% variation with 30% floor protection)
+  - **Historical UK inflation data** (1950-2025) from ONS for realistic CPI simulation
+  - Interest rates (monthly ±1% variation, locked every 5 years for mortgages)
 - **Help-to-Buy equity loan logic**:
   - Initial loan as a % of property value (typically 20% in England, 20% in Wales)
   - Equity-based repayment (loan amount grows/shrinks with property value)
@@ -60,10 +60,71 @@ source activate.sh
 python main.py
 ```
 
+## Data Sources
+
+This simulation uses **historical UK inflation data** to provide realistic economic modeling:
+
+### Consumer Price Index (CPI) Data
+- **Source**: UK Office for National Statistics (ONS)
+- **Coverage**: January 1950 - June 2025 (906 monthly observations)
+- **Licence**: [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
+- **URLs**:
+  - Historical rates (1950-1988): [ONS CPI Historical Annual Rate](https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/jfdz/mm23)
+  - Recent data (1988-2025): [ONS CPIH Time Series](https://www.ons.gov.uk/datasets/cpih01)
+
+### Data Processing
+The simulation converts annual CPI rates to monthly change deltas for realistic month-to-month inflation evolution:
+- **Mean monthly change**: -0.0000% 
+- **Standard deviation**: 0.0460%
+- **Range**: -0.27% to +0.29% monthly
+
+To regenerate the CPI dataset:
+```bash
+python process_cpi_data.py
+```
+
 ## Configuration
 
 Edit main.py to configure:
-- Number of simulations (e.g., 10,000)
-- Time horizon (e.g., 25 years)
-- Economic assumptions (house price volatility, inflation drift, interest rate process)
-- Borrower behavior (probability of remortgaging, part-repayments)
+- Number of simulations per repayment year (default: 1,000)
+- Maximum repayment year (default: 25 years)
+- Mortgage parameters (rate, term, amount)
+- Property value and equity loan details
+
+## Running the Simulation
+
+```bash
+# Activate virtual environment
+source activate.sh
+
+# Run full Monte Carlo analysis (26,000 scenarios)
+python main.py
+```
+
+The simulation generates:
+- Parallel processing across available CPU cores
+- Interactive matplotlib visualization with year slider
+- Ranking of repayment strategies by median P&L performance
+
+## Output Files
+
+The project includes several data files:
+
+### Generated CPI Data Files
+- `uk_cpi_historical_complete.csv` - Full historical dataset with dates and sources
+- `uk_cpi_annual_rates.csv` - Annual CPI rates for reference
+- `uk_cpi_monthly_changes.csv` - **Primary simulation input** - historical monthly CPI deltas
+
+### Raw Data (Downloaded)
+- `historical_cpi_annual_rates.csv` - Raw ONS historical data (1950-1988)
+- `cpih_recent_data.csv` - Raw ONS CPIH data (1988-2025)
+
+## Licence and Attribution
+
+- **CPI Data**: Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
+- **Source Attribution**: Office for National Statistics (ONS), UK Government
+- **Simulation Code**: This project's code is available under the repository licence
+
+When using this data or simulation, please include appropriate attribution to:
+1. UK Office for National Statistics for the underlying CPI data
+2. This project for the processing and simulation framework

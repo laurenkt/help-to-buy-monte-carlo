@@ -4,6 +4,50 @@ import matplotlib.ticker as ticker
 from matplotlib.widgets import Slider
 from multiprocessing import Pool
 import multiprocessing as mp
+import csv
+import os
+
+# Global variable to cache historical CPI monthly changes
+_historical_cpi_changes = None
+
+def load_historical_cpi_changes():
+    """Load historical CPI monthly changes from CSV file for realistic sampling"""
+    global _historical_cpi_changes
+    
+    if _historical_cpi_changes is not None:
+        return _historical_cpi_changes
+    
+    cpi_file = 'uk_cpi_monthly_changes.csv'
+    if not os.path.exists(cpi_file):
+        print(f"Warning: {cpi_file} not found, falling back to uniform random CPI changes")
+        return None
+    
+    try:
+        changes = []
+        with open(cpi_file, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip header
+            for row in reader:
+                changes.append(float(row[0]))  # Already in decimal format
+        
+        _historical_cpi_changes = np.array(changes)
+        print(f"Loaded {len(changes)} historical CPI monthly changes (mean: {np.mean(_historical_cpi_changes)*100:.4f}%, std: {np.std(_historical_cpi_changes)*100:.4f}%)")
+        return _historical_cpi_changes
+        
+    except Exception as e:
+        print(f"Error loading CPI changes: {e}, falling back to uniform random")
+        return None
+
+def sample_historical_cpi_change(random_state):
+    """Sample a random CPI monthly change from historical distribution"""
+    historical_changes = load_historical_cpi_changes()
+    
+    if historical_changes is None:
+        # Fallback to original uniform random method
+        return random_state.uniform(-0.01, 0.01)
+    
+    # Sample from historical distribution
+    return random_state.choice(historical_changes)
 
 class SimulationConfig:
     def __init__(self, mortgage_rate=0.02, mortgage_term_years=35, equity_loan_amount=240000, 
@@ -136,19 +180,22 @@ def generate_htb_projection(principal_amount, initial_property_value, repayment_
                                        current_property_value * (1 + monthly_property_changes[month]))  # Min 30% of initial
         property_values[month] = current_property_value
     
-    # CPI simulation: monthly random variation +/-1%, locked in each April for HTB rates
-    np.random.seed(random_seed)  # Different seed for each scenario
-    monthly_cpi_changes = np.random.uniform(-0.01, 0.01, total_months + 1)  # +/-1% monthly
+    # CPI simulation: use historical monthly changes to evolve CPI over time
+    cpi_random_state = np.random.RandomState(random_seed)  # Different seed for each scenario
     monthly_cpi_rates = np.zeros(len(time_months))
     
     # Start with base CPI of 2%
     base_cpi = 0.02
     current_cpi = base_cpi
+    monthly_cpi_rates[0] = current_cpi
     
-    # Track CPI month by month
-    for month in range(len(time_months)):
-        if month > 0:
-            current_cpi = max(0, current_cpi + monthly_cpi_changes[month])  # Prevent negative CPI
+    # Apply historical monthly changes
+    for month in range(1, len(time_months)):
+        # Sample a historical monthly change
+        monthly_change = sample_historical_cpi_change(cpi_random_state)
+        
+        # Apply the change to current CPI
+        current_cpi = max(0, current_cpi + monthly_change)  # Prevent negative CPI
         monthly_cpi_rates[month] = current_cpi
     
     # Mortgage rate simulation: monthly random variation +/-1%, locked every 5 years
