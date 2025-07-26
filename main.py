@@ -420,12 +420,12 @@ def plot_interactive_scenarios(scenarios, best_scenario, year_summaries):
     ax1_rate.set_ylabel('Interest Rate (%)')
     ax1.yaxis.set_major_formatter(ticker.FuncFormatter(format_currency))
     
-    # Combine legends - place outside chart on right
+    # Combine legends - place inside chart at top right
     lines1 = [line1, line2] 
     lines_rate = [line7, line8, line9, line10]
     labels1 = [l.get_label() for l in lines1]
     labels_rate = [l.get_label() for l in lines_rate]
-    ax1.legend(lines1 + lines_rate, labels1 + labels_rate, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    ax1.legend(lines1 + lines_rate, labels1 + labels_rate, loc='upper right', fontsize=8, ncol=2)
     
     ax1.grid(True, alpha=0.3)
     ax1.set_xlim(0, max_years)
@@ -438,7 +438,7 @@ def plot_interactive_scenarios(scenarios, best_scenario, year_summaries):
     
     ax2.set_ylabel('Property & Mortgage')
     ax2.yaxis.set_major_formatter(ticker.FuncFormatter(format_currency))
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax2.legend(loc='upper right')
     ax2.grid(True, alpha=0.3)
     ax2.set_xlim(0, max_years)
     
@@ -449,7 +449,7 @@ def plot_interactive_scenarios(scenarios, best_scenario, year_summaries):
     
     ax3.set_ylabel('Net Equity')
     ax3.yaxis.set_major_formatter(ticker.FuncFormatter(format_currency))
-    ax3.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax3.legend(loc='upper right')
     ax3.grid(True, alpha=0.3)
     ax3.set_xlim(0, max_years)
     
@@ -473,26 +473,26 @@ def plot_interactive_scenarios(scenarios, best_scenario, year_summaries):
     ax4.set_xlabel('Years')
     ax4.set_ylabel('Expenditure')
     ax4.yaxis.set_major_formatter(ticker.FuncFormatter(format_currency))
-    ax4.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax4.legend(loc='upper right')
     ax4.grid(True, alpha=0.3)
     ax4.set_xlim(0, max_years)
     
-    # Add slider for repayment years (0-25)
-    ax_slider = plt.axes([0.2, 0.05, 0.6, 0.03])
+    # Add slider for repayment years (0-25) - positioned higher to avoid overlap
+    ax_slider = plt.axes([0.2, 0.08, 0.6, 0.03])
     max_year = max([y['year'] for y in year_summaries])
     slider = Slider(ax_slider, 'Repayment Year', 0, max_year, valinit=0, 
                    valfmt='%d', valstep=1)
     
-    # Add text summary of top 5 years below slider
+    # Add text summary of top 5 years to the right of slider
     summary_text = "Top 5 Repayment Years by Median P&L:\n"
     for i, year_data in enumerate(year_summaries[:5], 1):
         summary_text += f"{i}. Year {year_data['year']}: £{year_data['median_pnl']:,.0f}\n"
     
-    fig.text(0.1, 0.02, summary_text, fontsize=10, verticalalignment='bottom',
+    fig.text(0.65, 0.02, summary_text, fontsize=9, verticalalignment='bottom',
              bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.8))
     
-    # Add margin on the right side for legends
-    plt.subplots_adjust(right=0.9)
+    # Adjust layout to prevent overlap
+    plt.subplots_adjust(bottom=0.15, top=0.95)
     
     def update_plot(val):
         selected_year = int(slider.val)
