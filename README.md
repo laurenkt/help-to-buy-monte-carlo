@@ -12,7 +12,7 @@ The aim is to understand risk exposure under various economic conditions and ass
 - **Stochastic modeling** using Monte Carlo:
   - **Historical UK property prices** (1995-2024) from HM Land Registry for South East London flats
   - **Historical UK inflation data** (1950-2025) from ONS for realistic CPI simulation
-  - Interest rates (monthly ±1% variation, locked every 5 years for mortgages)
+  - **Historical UK mortgage rates** (1939-2017) from FRED/Bank of England with 5-year fixed terms
 - **Help-to-Buy equity loan logic**:
   - Initial loan as a % of property value (typically 20% in England, 20% in Wales)
   - Equity-based repayment (loan amount grows/shrinks with property value)
@@ -71,6 +71,13 @@ This simulation uses **historical UK inflation data** to provide realistic econo
 - **Licence**: [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 - **URL**: [HM Land Registry UKHPI Data Downloads](https://www.gov.uk/government/statistical-data-sets/uk-house-price-index-data-downloads-december-2024)
 
+### Mortgage Rate Data
+- **Source**: FRED Economic Data / Bank of England Three Centuries Dataset
+- **Coverage**: September 1939 - January 2017 (928 monthly observations)
+- **Focus**: UK household variable mortgage rates
+- **Licence**: Public Domain Dedication and Licence (PDDL)
+- **URL**: [FRED UK Mortgage Rates (HVMRUKM)](https://fred.stlouisfed.org/series/HVMRUKM)
+
 ### Consumer Price Index (CPI) Data
 - **Source**: UK Office for National Statistics (ONS)
 - **Coverage**: January 1950 - June 2025 (906 monthly observations)
@@ -87,6 +94,12 @@ This simulation uses **historical UK inflation data** to provide realistic econo
 - **Standard deviation**: 1.226%  
 - **Range**: -6.6% to +6.3% monthly
 
+**Mortgage Rate Changes:**
+- Extracted from historical UK mortgage rates with 5-year lock periods
+- **Mean monthly change**: -0.0034%
+- **Standard deviation**: 0.2853%
+- **Range**: -1.95% to +3.25% monthly
+
 **CPI Changes:**
 - Converted annual CPI rates to monthly change deltas for realistic inflation evolution
 - **Mean monthly change**: -0.0000% 
@@ -97,6 +110,7 @@ To regenerate datasets:
 ```bash
 python process_cpi_data.py       # CPI inflation data
 python process_property_data.py  # Property price data
+python process_mortgage_data.py  # Mortgage rate data
 ```
 
 ## Configuration
@@ -131,12 +145,18 @@ The project includes several data files:
 - `uk_property_monthly_changes.csv` - **Primary simulation input** - historical monthly property deltas
 - `uk_property_changes_[region].csv` - Regional breakdowns (London, Inner London, etc.)
 
+### Generated Mortgage Data Files
+- `uk_mortgage_rates_complete.csv` - Full mortgage rate dataset with dates and sources
+- `uk_mortgage_monthly_changes.csv` - **Primary simulation input** - historical monthly mortgage deltas
+- `uk_mortgage_changes_fred_historical.csv` - Source-specific breakdown
+
 ### Generated CPI Data Files
 - `uk_cpi_historical_complete.csv` - Full historical dataset with dates and sources
 - `uk_cpi_annual_rates.csv` - Annual CPI rates for reference
 - `uk_cpi_monthly_changes.csv` - **Primary simulation input** - historical monthly CPI deltas
 
 ### Raw Data (Downloaded)
+- `uk_mortgage_rates_fred.csv` - Raw FRED mortgage rate data (1939-2017)
 - `uk_house_prices_property_type.csv` - Raw HM Land Registry data (1995-2024)
 - `historical_cpi_annual_rates.csv` - Raw ONS historical data (1950-1988)
 - `cpih_recent_data.csv` - Raw ONS CPIH data (1988-2025)
@@ -144,13 +164,16 @@ The project includes several data files:
 ## Licence and Attribution
 
 - **Property Data**: Contains HM Land Registry data © Crown copyright and database right 2024. Licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
+- **Mortgage Data**: UK mortgage rates from FRED/Bank of England Three Centuries Dataset. Licensed under [Public Domain Dedication and Licence (PDDL)](https://opendatacommons.org/licenses/pddl/)
 - **CPI Data**: Contains public sector information licensed under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 - **Source Attribution**: 
   - HM Land Registry, UK Government (property prices)
+  - FRED Economic Data / Bank of England (mortgage rates)
   - Office for National Statistics (ONS), UK Government (inflation data)
 - **Simulation Code**: This project's code is available under the repository licence
 
 When using this data or simulation, please include appropriate attribution to:
 1. HM Land Registry for the underlying property price data
-2. UK Office for National Statistics for the underlying CPI data  
-3. This project for the processing and simulation framework
+2. FRED Economic Data / Bank of England for the underlying mortgage rate data
+3. UK Office for National Statistics for the underlying CPI data  
+4. This project for the processing and simulation framework

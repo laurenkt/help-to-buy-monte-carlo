@@ -10,6 +10,7 @@ import os
 # Global variables to cache historical data
 _historical_cpi_changes = None
 _historical_property_changes = None
+_historical_mortgage_changes = None
 
 def load_historical_cpi_changes():
     """Load historical CPI monthly changes from CSV file for realistic sampling"""
@@ -81,6 +82,45 @@ def load_historical_property_changes():
 def sample_historical_property_change(random_state):
     """Sample a random property monthly change from historical distribution"""
     historical_changes = load_historical_property_changes()
+    
+    if historical_changes is None:
+        # Fallback to original uniform random method
+        return random_state.uniform(-0.01, 0.01)
+    
+    # Sample from historical distribution
+    return random_state.choice(historical_changes)
+
+def load_historical_mortgage_changes():
+    """Load historical mortgage monthly changes from CSV file for realistic sampling"""
+    global _historical_mortgage_changes
+    
+    if _historical_mortgage_changes is not None:
+        return _historical_mortgage_changes
+    
+    mortgage_file = 'uk_mortgage_monthly_changes.csv'
+    if not os.path.exists(mortgage_file):
+        print(f"Warning: {mortgage_file} not found, falling back to uniform random mortgage changes")
+        return None
+    
+    try:
+        changes = []
+        with open(mortgage_file, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # Skip header
+            for row in reader:
+                changes.append(float(row[0]))  # Already in decimal format
+        
+        _historical_mortgage_changes = np.array(changes)
+        print(f"Loaded {len(changes)} historical mortgage monthly changes (mean: {np.mean(_historical_mortgage_changes)*100:.4f}%, std: {np.std(_historical_mortgage_changes)*100:.4f}%)")
+        return _historical_mortgage_changes
+        
+    except Exception as e:
+        print(f"Error loading mortgage changes: {e}, falling back to uniform random")
+        return None
+
+def sample_historical_mortgage_change(random_state):
+    """Sample a random mortgage monthly change from historical distribution"""
+    historical_changes = load_historical_mortgage_changes()
     
     if historical_changes is None:
         # Fallback to original uniform random method
@@ -241,18 +281,25 @@ def generate_htb_projection(principal_amount, initial_property_value, repayment_
         current_cpi = max(0, current_cpi + monthly_change)  # Prevent negative CPI
         monthly_cpi_rates[month] = current_cpi
     
-    # Mortgage rate simulation: monthly random variation +/-1%, locked every 5 years
-    np.random.seed(random_seed + 1000)  # Different seed for mortgage rates
-    monthly_mortgage_changes = np.random.uniform(-0.01, 0.01, total_months + 1)  # +/-1% monthly
+    # Mortgage rate simulation: use historical UK mortgage rate changes, locked every 5 years
+    mortgage_random_state = np.random.RandomState(random_seed + 1000)  # Different seed for mortgage rates
     monthly_mortgage_rates = np.zeros(len(time_months))
     
     # Start with base mortgage rate (from parameter)
     current_mortgage_rate = mortgage_rate
+    monthly_mortgage_rates[0] = current_mortgage_rate
     
-    # Track mortgage rates month by month
-    for month in range(len(time_months)):
-        if month > 0:
-            current_mortgage_rate = max(0.005, current_mortgage_rate + monthly_mortgage_changes[month])  # Min 0.5%
+    # Apply historical mortgage changes month by month, with 5-year lock periods
+    for month in range(1, len(time_months)):
+        # Check if we're at the start of a new 5-year period (60 months)
+        if month % 60 == 0:
+            # Sample a new historical monthly change for rate adjustment
+            monthly_change = sample_historical_mortgage_change(mortgage_random_state)
+            
+            # Apply the change to get new locked rate
+            current_mortgage_rate = max(0.005, current_mortgage_rate + monthly_change)  # Min 0.5%
+        
+        # Rate stays locked for this 5-year period
         monthly_mortgage_rates[month] = current_mortgage_rate
     
     # HTB interest rates locked in each April (based on CPI at that time)
