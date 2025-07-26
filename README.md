@@ -155,6 +155,9 @@ python main.py 10000
 # Specify scenarios per year and max repayment year
 python main.py 5000 20
 
+# Specify scenarios, max year, and historical lookback period
+python main.py 10000 25 10  # Use only last 10 years of economic data
+
 # Quick test run (100 scenarios, up to year 5)
 python main.py 100 5
 ```
@@ -162,6 +165,13 @@ python main.py 100 5
 **Command Line Arguments:**
 - `num_scenarios` (optional): Number of scenarios per repayment year (default: 1,000)
 - `max_year` (optional): Maximum repayment year to analyze (default: 25, max: 30)
+- `lookback_years` (optional): Years of historical data to use (default: all available data, max: 100)
+
+**Historical Data Lookback:**
+The lookback feature allows you to limit the simulation to recent economic conditions by specifying how many years back to sample from. For example:
+- `python main.py 1000 25 10` - Uses only data from 2015-2025 (last 10 years)
+- `python main.py 1000 25 30` - Uses only data from 1995-2025 (last 30 years)
+- `python main.py 1000 25` - Uses all available historical data (1939-2025 for mortgage rates, 1950-2025 for CPI, 1995-2025 for property prices)
 
 The simulation generates:
 - Parallel processing across available CPU cores
@@ -169,6 +179,7 @@ The simulation generates:
 - Interactive matplotlib visualization with year slider
 - Ranking of repayment strategies by median P&L performance
 - Total scenarios = `num_scenarios × (max_year + 1)`
+- Historical data filtered by `lookback_years` if specified
 
 ## Output Files
 
